@@ -18,6 +18,7 @@ stop() {
   || stop "no deployment for pull requests"
 
 settings=$(mktemp --suffix .xml)
+trap 'rm -f "${settings}"' EXIT
 
 cat > ${settings} <<-'EOF'
   <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
