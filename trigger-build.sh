@@ -1,25 +1,23 @@
 #!/bin/bash -x
 
-echo $@
-
 function stop() {
   echo $* >&2
   exit 0
 }
 
-[ "${TRAVIS_BRANCH}" == "${SNAPSHOT_BRANCH}" ] \
+[ "${TRAVIS_BRANCH}" = "${SNAPSHOT_BRANCH}" ] \
   || stop "won't trigger for branch ${TRAVIS_BRANCH}"
 
-[ "${TRAVIS_SECURE_ENV_VARS}" == "true" ] \
+[ "${TRAVIS_SECURE_ENV_VARS}" = "true" ] \
   || stop "no secure enviroment variables were provided"
 
-[ "${TRAVIS_JOB_NUMBER}" == "${TRAVIS_BUILD_NUMBER}.1" ] \
+[ "${TRAVIS_JOB_NUMBER}" = "${TRAVIS_BUILD_NUMBER}.1" ] \
   || stop "only the first build job will trigger"
 
-[ "${TRAVIS_PULL_REQUEST}" == "false" ] \
+[ "${TRAVIS_PULL_REQUEST}" = "false" ] \
   || stop "no trigger for pull requests"
 
-[ "${DEPENDENT_BUILD}" != "true"] \
+[ "${DEPENDENT_BUILD}" != "true" ] \
   || stop "won't trigger for dependent build"
 
 function travis-api() {
