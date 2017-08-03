@@ -50,8 +50,7 @@ function delete_env_var() {
 }
 
 function restart_build() {
-  result=$(travis-api -X POST "${endpoint}/builds/${1}/restart" | jq -r '.result')
-  [ "${result}" = "true" ] || fail "could not restart build"
+  travis-api -X POST "${endpoint}/builds/${1}/restart" | jq -r '.result'
 }
 
 function last_build() {
@@ -60,6 +59,20 @@ function last_build() {
 
 function build_state() {
   travis-api "${endpoint}/builds/${1}" | jq -r '.state'
+}
+
+function delete_env_vars() {
+  for id in "${env_var_ids[@]}"; do
+    delete_env_var "${repo_id}" "${id}"
+  done
+}
+
+function create_env_vars() {
+  env_var_ids=(
+    $(create_env_var "${repo_id}" DEPENDENT_BUILD "true")
+    $(create_env_var "${repo_id}" TRIGGER_COMMIT "${TRAVIS_COMMIT}")
+    $(create_env_var "${repo_id}" TRIGGER_REPO "${TRAVIS_REPO_SLUG}")
+  )
 }
 
 [ -n "${TRAVIS_AUTH_TOKEN}" ] \
@@ -71,21 +84,18 @@ function build_state() {
 endpoint=https://api.travis-ci.org
 repo_id=$(get_repo_id "${1}")
 branch="${2:-master}"
-
 last_build_id=$(last_build "${repo_id}" "${branch}")
 
-env_var_ids=(
-  $(create_env_var "${repo_id}" DEPENDENT_BUILD "true")
-  $(create_env_var "${repo_id}" TRIGGER_COMMIT "${TRAVIS_COMMIT}")
-  $(create_env_var "${repo_id}" TRIGGER_REPO "${TRAVIS_REPO_SLUG}")
-)
+declare -a env_var_ids
 
-restart_build "${last_build_id}"
+create_env_vars
 
-until [ "$(build_state "${last_build_id}")" = "started" ]; do
-  sleep 5
-done
-
-for id in "${env_var_ids[@]}"; do
-  delete_env_var "${repo_id}" "${id}"
-done
+if [ "$(restart_build "${last_build_id}")" != "true" ]; then
+  delete_env_vars
+  fail "could not restart build"
+else
+  until [ "$(build_state "${last_build_id}")" = "started" ]; do
+    sleep 5
+  done
+  delete_env_vars
+fi
