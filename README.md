@@ -1,6 +1,6 @@
 # 52°North Travis CI Tools
 
-## `mvn-deploy-shapshot.sh`
+## `deploy-maven-snapshot.sh`
 
 Will run `mvn deploy -DskipTests=true` to deploy the current branch to the Sonatype Snapshot repository.
 
@@ -27,7 +27,7 @@ Add the following to your `.travis.yml`:
 
 ```yaml
 after_success:
-  - curl -s https://raw.githubusercontent.com/52North/travis-tools/master/mvn-deploy-shapshot.sh | bash
+  - curl -Ls https://git.io/deploy-maven-snapshot | bash
 env:
   global:
   - SNAPSHOT_BRANCH=master
@@ -92,7 +92,7 @@ Configure your dependent builds:
 ```yaml
 after_success:
 - SCRIPT=$(mktemp)
-- curl -s https://raw.githubusercontent.com/52North/travis-tools/master/trigger_dependent_build.sh -o "$SCRIPT"
+- curl -Ls https://git.io/v7gXY -o "$SCRIPT"
 - bash "${SCRIPT}" 52North/faroe
 - bash "${SCRIPT}" 52North/iceland
 - bash "${SCRIPT}" 52North/svalbard
@@ -104,5 +104,5 @@ after_success:
 For a single dependent build, this may be more concise:
 ```yaml
 after_success:
-- curl -s https://raw.githubusercontent.com/52North/travis-tools/master/trigger_dependent_build.sh | bash -s -- 52North/faroe
+- curl -Ls https://git.io/v7gXY | bash -s -- 52North/faroe
 ```
