@@ -40,7 +40,9 @@ This script will trigger the last build of branch (per default `master`) of anot
 ```sh
 trigger_dependent_build.sh repository [branch]
 ```
-Builds are only triggered for a configured branch, all other branches and pull requests are ignored. Dependent builds are not transitive, a dependent build won't trigger it's dependencies. The script will add the following environment variables to the dependent build:
+Builds are only triggered for a configured branch, all other branches and pull requests are ignored. Dependent builds are not transitive, a dependent build won't trigger it's dependencies.
+
+The script will add the following environment variables to the dependent build:
 
 | Environment variable | Description                                               |
 |----------------------|-----------------------------------------------------------|
