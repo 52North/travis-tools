@@ -33,12 +33,11 @@ env:
   - SNAPSHOT_BRANCH=master
 ```
 
-
-## `trigger-dependent-build.sh`
+## `trigger-build.sh`
 
 This script will trigger the last build of branch (per default `master`) of another repository to be rebuild. The syntax is:
 ```sh
-trigger_dependent_build.sh repository [branch]
+trigger-build.sh repository [branch]
 ```
 Builds are only triggered for a configured branch, all other branches and pull requests are ignored. Dependent builds are not transitive, a dependent build won't trigger it's dependencies.
 
@@ -92,7 +91,7 @@ Configure your dependent builds:
 ```yaml
 after_success:
 - SCRIPT=$(mktemp)
-- curl -Ls https://git.io/v7gXY -o "$SCRIPT"
+- curl -Ls https://git.io/trigger-build -o "$SCRIPT"
 - bash "${SCRIPT}" 52North/faroe
 - bash "${SCRIPT}" 52North/iceland
 - bash "${SCRIPT}" 52North/svalbard
@@ -104,5 +103,5 @@ after_success:
 For a single dependent build, this may be more concise:
 ```yaml
 after_success:
-- curl -Ls https://git.io/v7gXY | bash -s -- 52North/faroe
+- curl -Ls https://git.io/trigger-build | bash -s -- 52North/faroe
 ```
