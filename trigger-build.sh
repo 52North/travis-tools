@@ -12,9 +12,8 @@ function fail() {
  exit 1
 }
 
-function usage() {
-  echo "Usage: $0 repo-slug [branch]" >&2
-}
+[ $# -ge 1 -a $# -le 2 ] \
+  || fail "Usage: $0 repo-slug [branch]"
 
 [ "${TRAVIS_BRANCH}" = "${SNAPSHOT_BRANCH}" ] \
   || stop "won't trigger for branch ${TRAVIS_BRANCH}"
@@ -31,71 +30,56 @@ function usage() {
 [ "${DEPENDENT_BUILD}" != "true" ] \
   || stop "won't trigger for dependent build"
 
-function travis-api() {
-  curl -s -H "Authorization: token ${TRAVIS_AUTH_TOKEN}" \
-          -H 'Content-Type: application/json' "$@"
-}
-
-function get_repo_id() {
-  travis-api "${endpoint}/repos/${1}"  | jq -r '.id'
-}
-
-function create_env_var() {
-  local req=$(printf '{ "env_var": { "name": "%s", "value": "%s", "public": true } }' "${2}" "${3}")
-  travis-api -X POST "${endpoint}/settings/env_vars?repository_id=${1}" -d "${req}" | jq -r '.env_var.id'
-}
-
-function delete_env_var() {
-  travis-api -X DELETE "${endpoint}/settings/env_vars/${2}?repository_id=${1}" > /dev/null
-}
-
-function restart_build() {
-  travis-api -X POST "${endpoint}/builds/${1}/restart" | jq -r '.result'
-}
-
-function last_build() {
-  travis-api "${endpoint}/repos/${1}/branches/${2}" | jq '.branch.id'
-}
-
-function build_state() {
-  travis-api "${endpoint}/builds/${1}" | jq -r '.state'
-}
-
-function delete_env_vars() {
-  for id in "${env_var_ids[@]}"; do
-    delete_env_var "${repo_id}" "${id}"
-  done
-}
-
-function create_env_vars() {
-  env_var_ids=(
-    $(create_env_var "${repo_id}" DEPENDENT_BUILD "true")
-    $(create_env_var "${repo_id}" TRIGGER_COMMIT "${TRAVIS_COMMIT}")
-    $(create_env_var "${repo_id}" TRIGGER_REPO "${TRAVIS_REPO_SLUG}")
-  )
-}
-
 [ -n "${TRAVIS_AUTH_TOKEN}" ] \
   || fail 'missing $TRAVIS_AUTH_TOKEN'
 
-[ $# -ge 1 -a $# -le 2 ] \
-  || fail $(usage)
+function url-encode() {
+  sed -e 's: :%20:g' \
+      -e 's:<:%3C:g' \
+      -e 's:>:%3E:g' \
+      -e 's:#:%23:g' \
+      -e 's:%:%25:g' \
+      -e 's:{:%7B:g' \
+      -e 's:}:%7D:g' \
+      -e 's:|:%7C:g' \
+      -e 's:\\:%5C:g' \
+      -e 's:\^:%5E:g' \
+      -e 's:~:%7E:g' \
+      -e 's:\[:%5B:g' \
+      -e 's:\]:%5D:g' \
+      -e 's:`:%60:g' \
+      -e 's:;:%3B:g' \
+      -e 's:/:%2F:g' \
+      -e 's:?:%3F:g' \
+      -e 's^:^%3A^g' \
+      -e 's:@:%40:g' \
+      -e 's:=:%3D:g' \
+      -e 's:&:%26:g' \
+      -e 's:\$:%24:g' \
+      -e 's:\!:%21:g'<<<"$1"
+}
 
 endpoint=https://api.travis-ci.org
-repo_id=$(get_repo_id "${1}")
+repo_slug="$1"
 branch="${2:-master}"
-last_build_id=$(last_build "${repo_id}" "${branch}")
 
-declare -a env_var_ids
-
-create_env_vars
-
-if [ "$(restart_build "${last_build_id}")" != "true" ]; then
-  delete_env_vars
-  fail "could not restart build"
-else
-  until [ "$(build_state "${last_build_id}")" = "started" ]; do
-    sleep 5
-  done
-  delete_env_vars
-fi
+curl -s -X POST \
+     -H "Authorization: token ${TRAVIS_AUTH_TOKEN}" \
+     -H 'Content-Type: application/json' \
+     -H 'Accept: application/json' \
+     -H "Travis-API-Version: 3" \
+     "${endpoint}/$(url-encode ${repo_slug})/requests" "${TRAVIS_REPO_SLUG}" \
+     -d "{
+  \"request\": {
+    \"message\": \"Dependent build for ${TRAVIS_COMMIT} of ${TRAVIS_REPO_SLUG}\",
+    \"branch\": \"${branch}\"
+    \"config\": {
+      \"merge_mode\": \"deep_merge\",
+      \"env\": {
+        \"DEPENDENT_BUILD\": true,
+        \"TRIGGER_COMMIT\": \"${TRAVIS_COMMIT}\",
+        \"TRIGGER_REPO\": \"${TRAVIS_REPO_SLUG}\"
+      }
+    }
+  }
+}" 

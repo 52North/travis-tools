@@ -54,7 +54,7 @@ The script will add the following environment variables to the dependent build:
 | Environment variable | Description                                         |
 |----------------------|-----------------------------------------------------|
 | `SNAPSHOT_BRANCH`    | The branch for which dependent build are triggered. |
-| `TRAVIS_AUTH_TOKEN` | The authorization token for Travis CI.               |
+| `TRAVIS_AUTH_TOKEN`  | The authorization token for Travis CI.              |
 
 ### Example
 
@@ -68,15 +68,6 @@ To generate a token:
 ```sh
 travis login --auto
 travis token
-```
-
-The script requires `jq` to be installed:
-
-```yaml
-addons:
-  apt:
-    packages:
-    - jq
 ```
 
 Define the branch for which the builds should be triggered:
