@@ -68,7 +68,7 @@ curl -s -X POST \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json' \
      -H "Travis-API-Version: 3" \
-     "${endpoint}/$(url-encode ${repo_slug})/requests" "${TRAVIS_REPO_SLUG}" \
+     "${endpoint}/repo/$(url-encode ${repo_slug})/requests" "${TRAVIS_REPO_SLUG}" \
      -d "{
   \"request\": {
     \"message\": \"Dependent build for ${TRAVIS_COMMIT} of ${TRAVIS_REPO_SLUG}\",
@@ -82,4 +82,4 @@ curl -s -X POST \
       }
     }
   }
-}" 
+}"
