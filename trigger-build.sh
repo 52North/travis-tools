@@ -72,7 +72,7 @@ curl -s -X POST \
      -d "{
   \"request\": {
     \"message\": \"Dependent build for ${TRAVIS_COMMIT} of ${TRAVIS_REPO_SLUG}\",
-    \"branch\": \"${branch}\"
+    \"branch\": \"${branch}\",
     \"config\": {
       \"merge_mode\": \"deep_merge\",
       \"env\": {
