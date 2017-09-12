@@ -76,9 +76,11 @@ curl -s -X POST \
     \"config\": {
       \"merge_mode\": \"deep_merge\",
       \"env\": {
-        \"DEPENDENT_BUILD\": true,
-        \"TRIGGER_COMMIT\": \"${TRAVIS_COMMIT}\",
-        \"TRIGGER_REPO\": \"${TRAVIS_REPO_SLUG}\"
+        \"global\": [
+          \"DEPENDENT_BUILD=true\",
+          \"TRIGGER_COMMIT=${TRAVIS_COMMIT}\",
+          \"TRIGGER_REPO=${TRAVIS_REPO_SLUG}\"
+        ]
       }
     }
   }
