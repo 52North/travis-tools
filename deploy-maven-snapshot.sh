@@ -16,6 +16,9 @@ stop() {
 
 [ "${TRAVIS_PULL_REQUEST}" = "false" ] \
   || stop "no deployment for pull requests"
+  
+[ "${DEPENDENT_BUILD}" != "true" ] \
+  || stop "won't trigger for dependent build"
 
 settings=$(mktemp --suffix .xml)
 trap 'rm -f "${settings}"' EXIT
