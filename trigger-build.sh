@@ -26,6 +26,9 @@ function fail() {
 
 [ "${TRAVIS_PULL_REQUEST}" = "false" ] \
   || stop "won't trigger for pull requests"
+  
+[ "${TRAVIS_EVENT_TYPE}" = "cron" ] \
+  || stop "won't trigger for cron jobs"
 
 [ "${DEPENDENT_BUILD}" != "true" ] \
   || stop "won't trigger for dependent build"
