@@ -18,7 +18,7 @@ stop() {
   || stop "no deployment for pull requests"
   
 [ "${TRAVIS_EVENT_TYPE}" = "false" ] \
-  | stop "no deployment for cron jobs"
+  || stop "no deployment for cron jobs"
   
 [ "${DEPENDENT_BUILD}" != "true" ] \
   || stop "no deployment for dependent build"
