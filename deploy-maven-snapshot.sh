@@ -38,4 +38,6 @@ cat > ${settings} <<-'EOF'
   </settings>
 EOF
 
-mvn deploy -DskipTests=true --settings "${settings}"
+[ -x ./mvnw ] && MVN=./mvnw || MVN=mvn
+
+${MVN} deploy -DskipTests=true --settings "${settings}"
