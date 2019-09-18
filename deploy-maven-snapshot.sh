@@ -14,9 +14,6 @@ stop() {
 [ "${TRAVIS_JOB_NUMBER}" = "${TRAVIS_BUILD_NUMBER}.1" ] \
   || stop "only the first build job will be deployed"
 
-[ "${TRAVIS_PULL_REQUEST}" = "false" ] \
-  || stop "no deployment for pull requests"
-  
 [ "${TRAVIS_EVENT_TYPE}" = "false" ] \
   || stop "no deployment for cron jobs"
   
